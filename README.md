@@ -4,6 +4,8 @@ A complete action-conditioned world model of a 2D pixel-art character, trained f
 scratch on self-generated data. 4.4M parameters, 17.7 MB, ~100 fps on a laptop GPU.
 
 **Report:** [`docs.md`](docs.md)
+**Dataset:** [`Aquinlabs/small-worlds-pixel-platformer`](https://huggingface.co/datasets/Aquinlabs/small-worlds-pixel-platformer)
+**Model:** [`Aquinlabs/pixel-art-gwm`](https://huggingface.co/Aquinlabs/pixel-art-gwm)
 
 ## The finding
 
@@ -63,17 +65,19 @@ Play locally with the released checkpoints:
 python src/algo/play_local.py --tok artifacts/tokenizer.pt --dyn artifacts/dynamics.pt
 ```
 
+**Model:** [`Aquinlabs/pixel-art-gwm`](https://huggingface.co/Aquinlabs/pixel-art-gwm)
+
 ## Dataset
 
 2,025,385 frames across 35,000 episodes, generated (not scraped).
 
-**Hugging Face:** [`maxmill/small-worlds-pixel-platformer`](https://huggingface.co/datasets/maxmill/small-worlds-pixel-platformer)
+**Hugging Face:** [`Aquinlabs/small-worlds-pixel-platformer`](https://huggingface.co/datasets/Aquinlabs/small-worlds-pixel-platformer)
 **How it was made:** [`docs.md`](docs.md)
 
 ```python
 import numpy as np
 from huggingface_hub import hf_hub_download
-p = hf_hub_download("maxmill/small-worlds-pixel-platformer",
+p = hf_hub_download("Aquinlabs/small-worlds-pixel-platformer",
                     "train/shard_0000.npz", repo_type="dataset")
 d = np.load(p)   # frames, action_vecs, rewards, ep_id, goal, terminal
 ```
