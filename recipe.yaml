@@ -1,0 +1,72 @@
+# Kernel spec. Phase 3, stage 1: train the tokenizer on our own corpus.
+#
+# We keep dreamer4's architecture and training code and none of its weights.
+# Its released tokenizer scores 18.56 dB on our pixel art and rebuilds the fox
+# as a robot arm, and finetuning it would invalidate the dynamics model trained
+# on its frozen latents -- so both stages get retrained either way.
+#
+# aq owns the run record; Modal owns the compute. src/algo/world_model.py runs
+# `modal run` and returns a JSON checkpoint pointing at the d4-runs volume.
+
+family: video
+method: world_model
+stage: dynamics             # tokenizer | dynamics
+
+data:
+  workspace_note: aquin (A100-40GB / H100 available)
+  path: data/corpus.json     # pointer; frames live on the Modal volume
+  target: frames             # unused by src/algo/world_model.py, but aq's recipe
+                             # validator falls through to a tabular branch for
+                             # any method it does not recognise and requires it
+  backend: modal
+  workspace: sachin-37-73-17
+  volume: pixel-world-data
+  train_split: train
+  resolution: 128            # baked into the tokenizer; cannot be casually lowered
+  fps: 15
+  action_dim: 16             # zero-padded, 3 valid dims + mask
+  n_actions: 6               # idle/left/right/jump/crouch/use
+  art_version: 3             # side-profile sprite; v2 shards must not mix in
+
+train:
+  run: dyn_v1
+  steps: 2000
+  batch_size: 16
+  ctx: 8                     # 8 frames of context = 0.53 s at 15 fps
+  horizon: 8                 # rollout length the eval scores
+  tokenizer_run: pal_v2      # frozen; stage 1 passed at char_acc 0.9994
+
+eval:
+  metric: rollout_char_acc   # ROLLOUT accuracy, not one-step latent error.
+  min_score: 0.80            # one-step can look excellent while multi-step
+                             # rollouts drift into nonsense, and drift is what
+                             # decides whether this is playable.
+  secondary: [rollout_palette_acc, per_step_acc]
+  n_frames: 256
+
+# Stage 2 (dynamics) is deliberately not wired yet: the stages compose
+# sequentially, so a weak tokenizer would silently waste the dynamics run.
+
+# --- stage 2: dynamics (not yet wired; runs only after the stage-1 gate) ---
+#
+# Three changes from the original plan, all aimed at long-horizon coherence,
+# which is the MVP's real failure mode rather than compute:
+#
+#   action_repeat 2   The 15 fps in the brief was inherited from a dataset we
+#                     no longer train on. At 15 fps a 3-second rollout is 45
+#                     frames against a 16-frame context, so most of a demo is
+#                     the model consuming its own output. At 7.5 fps it is 22.
+#                     Measured: repeat=3 was worse, collapsing median episode
+#                     length to 11 frames and starving seq_len 16.
+#   seq_len 16        2.1 seconds of context at 7.5 fps.
+#   staged bar        Judge coherence at 1s before 3s, so success is a curve
+#                     rather than one pass/fail.
+dynamics:
+  action_repeat: 2
+  fps: 7.5
+  seq_len: 16              # 2.1 s of context
+  rollout_bar:             # frames of coherent rollout, in order of ambition
+    - {seconds: 1, frames: 8}
+    - {seconds: 2, frames: 15}
+    - {seconds: 3, frames: 22}
+  requires: stage-1 gate passed (palette_acc >= 0.95)

@@ -1,0 +1,9 @@
+{
+  "run": "dyn_v2",
+  "steps": 10000,
+  "rollout_char_acc": 0.8000421703682878,
+  "rollout_palette_acc": 0.9958522319793701,
+  "tokenizer": "pal_v2",
+  "tokenizer_char_acc": 0.9994,
+  "note": "stage-2 gate PASSED; preserved before the 26k run"
+}

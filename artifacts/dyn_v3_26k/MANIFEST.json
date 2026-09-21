@@ -1,0 +1,20 @@
+{
+  "run": "dyn_v3",
+  "steps": 26000,
+  "rollout_char_acc_final": 0.8372249822569198,
+  "rollout_char_acc_best": 0.8850046164708438,
+  "best_at_step": 23000,
+  "rollout_palette_acc": 0.9967093467712402,
+  "per_step_acc": [
+    0.9985,
+    0.9982,
+    0.9972,
+    0.9961,
+    0.9965,
+    0.9962,
+    0.9962,
+    0.9949
+  ],
+  "tokenizer": "pal_v2",
+  "note": "26k run; NOTE only latest.pt saved, best was step 23k"
+}

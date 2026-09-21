@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+data/*.npz
+data/*.json
+artifacts/frames/
+artifacts/sframes/
+artifacts/web/
+artifacts/demo/
+artifacts/fig/
+artifacts/*.npz
+artifacts/*.mp4
+artifacts/**/*.pt
+/tmp/
+jobs/
+sandbox/
+.DS_Store
